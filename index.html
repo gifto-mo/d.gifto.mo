@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聯絡我們 | Giftomo - 澳門領先禮品卡服務</title>
+    
+    <!-- 字體和圖標 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #3a8ee2;
+            --primary-light: #5a9ef3;
+            --text: #ffffff;
+            --text-secondary: #a0aec0;
+            --bg: #1a1e1d;
+            --card-bg: rgba(27, 35, 34, 0.8);
+            --radius: 20px;
+            --transition: 0.3s;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            color: var(--text);
+            background: linear-gradient(135deg, #1a1e2d 0%, #1e2d2d 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* 動態背景元素 */
+        .bg-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .bg-circle {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.15;
+            animation: float 15s infinite linear;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(10vw, 10vh); }
+            50% { transform: translate(5vw, 15vh); }
+            75% { transform: translate(-5vw, 5vh); }
+        }
+        
+        /* 頁眉樣式 */
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(26, 33, 32, 0.95);
+            backdrop-filter: blur(10px);
+            height: 80px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            box-shadow: 0 4px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .logo {
+            height: 45px;
+            transition: all 0.3s ease;
+        }
+        
+        .logo:hover {
+            transform: scale(1.05);
+        }
+        
+        /* 導航菜單 */
+        .nav-menu {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .nav-link {
+            color: var(--text);
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: var(--radius);
+            transition: all var(--transition);
+            position: relative;
+        }
+        
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover::before {
+            width: 100%;
+        }
+        
+        .nav-link.active {
+            background: var(--primary);
+            box-shadow: 0 4px 15px rgba(58, 142, 226, 0.4);
+        }
+        
+        /* 頁面標題 */
+        .page-header {
+            text-align: center;
+            padding: 80px 20px 50px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .page-title {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            background: linear-gradient(to right, #fff, #a0d1ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .page-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, var(--primary), var(--primary-light));
+            transform: scaleX(0);
+            transform-origin: left;
+            animation: titleUnderline 1.5s ease forwards 0.5s;
+        }
+        
+        @keyframes titleUnderline {
+            to { transform: scaleX(1); }
+        }
+        
+        .page-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s ease forwards 0.8s;
+        }
+        
+        @keyframes fadeInUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* 主要內容 */
+        .contact-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 80px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        /* 聯絡信息卡片 */
+        .contact-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 40px;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transform: translateY(50px);
+            opacity: 0;
+            animation: cardEntrance 1s ease forwards 0.5s;
+        }
+        
+        @keyframes cardEntrance {
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .contact-card:hover {
+            transform: translateY(-5px) !important;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 30px;
+            position: relative;
+            padding-bottom: 15px;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 3px;
+            background: var(--primary);
+        }
+        
+        /* 聯絡方式項目 */
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        
+        .contact-item:nth-child(1) { animation: itemEntrance 0.8s ease forwards 0.8s; }
+        .contact-item:nth-child(2) { animation: itemEntrance 0.8s ease forwards 1s; }
+        .contact-item:nth-child(3) { animation: itemEntrance 0.8s ease forwards 1.2s; }
+        .contact-item:nth-child(4) { animation: itemEntrance 0.8s ease forwards 1.4s; }
+        
+        @keyframes itemEntrance {
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .contact-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(5px) !important;
+        }
+        
+        .contact-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 5px 15px rgba(58, 142, 226, 0.4);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            border: 2px solid white;
+        }
+        
+        .contact-item:hover .contact-icon {
+            transform: scale(1.1);
+            box-shadow: 0 8px 20px rgba(58, 142, 226, 0.6);
+        }
+        
+        .contact-icon img {
+            width: 60%;
+            height: 60%;
+            object-fit: contain;
+            border-radius: 50%;
+        }
+        
+        .contact-text h3 {
+            font-size: 1.3rem;
+            margin-bottom: 5px;
+        }
+        
+        .contact-text p, .contact-text a {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+        }
+        
+        .contact-text a {
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .contact-text a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--primary-light);
+            transition: width 0.3s ease;
+        }
+        
+        .contact-text a:hover::after {
+            width: 100%;
+        }
+        
+        /* 營業時間 */
+        .business-hours {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .hours-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .day-hour {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+            transition: all 0.2s ease;
+        }
+        
+        .day-hour:hover {
+            transform: translateX(5px);
+            border-color: var(--primary);
+        }
+        
+        /* 聯絡表單 */
+        .form-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 40px;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transform: translateY(50px);
+            opacity: 0;
+            animation: cardEntrance 1s ease forwards 0.7s;
+        }
+        
+        .form-card:hover {
+            transform: translateY(-5px) !important;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        }
+        
+        .contact-form {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .form-label {
+            font-size: 1.05rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-secondary);
+        }
+        
+        .form-label i {
+            color: var(--primary-light);
+            width: 20px;
+            text-align: center;
+        }
+        
+        .form-input, .form-textarea, .form-select {
+            padding: 16px 20px;
+            border-radius: var(--radius);
+            border: none;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.07);
+            color: white;
+            width: 100%;
+            font-family: inherit;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 0 0 4px rgba(58, 142, 226, 0.2);
+        }
+        
+        .form-textarea {
+            min-height: 180px;
+            resize: vertical;
+        }
+        
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23a0aec0' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 16px;
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            font-weight: 600;
+            padding: 16px 25px;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 6px 20px rgba(58, 142, 226, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: all 0.5s ease;
+        }
+        
+        .submit-btn:hover::before {
+            left: 100%;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 9px 25px rgba(58, 142, 226, 0.6);
+        }
+        
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+        
+        /* 頁腳 */
+        .footer {
+            background: rgba(18, 20, 20, 0.98);
+            padding: 40px 20px;
+            text-align: center;
+            border-top: 1px solid rgba(58, 142, 226, 0.1);
+        }
+        
+        .footer-logo {
+            margin-bottom: 20px;
+        }
+        
+        .footer-logo img {
+            height: 50px;
+            opacity: 0.8;
+        }
+        
+        /* 響應式設計 */
+        @media (max-width: 900px) {
+            .contact-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .page-title {
+                font-size: 2.5rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                padding: 0 20px;
+                height: 70px;
+            }
+            
+            .nav-menu {
+                display: flex;
+            }
+            
+            .page-header {
+                padding: 60px 20px 40px;
+            }
+            
+            .contact-card, .form-card {
+                padding: 30px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .hours-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .contact-item {
+                padding: 15px;
+            }
+            
+            .contact-icon {
+                width: 45px;
+                height: 45px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 動態背景元素 -->
+    <div class="bg-elements" id="bgElements"></div>
+    
+    <!-- 頁眉導航 -->
+    <header class="header">
+        <a href="https://gifto-mo.github.io/home.gifto.mo/">
+            <img class="logo" src="https://raw.githubusercontent.com/gifto-mo/home.gitfmo.mo./main/logo.png" alt="Giftomo Logo">
+        </a>
+        
+        <nav class="nav-menu">
+            <a href="#" class="nav-link"><i class="fas fa-home"></i> 首頁</a>
+            <a href="#" class="nav-link"><i class="fas fa-gift"></i> 產品</a>
+            <a href="#" class="nav-link"><i class="fas fa-tags"></i> 優惠</a>
+            <a href="#" class="nav-link active"><i class="fas fa-phone-alt"></i> 聯絡我們</a>
+        </nav>
+    </header>
+
+    <!-- 頁面標題 -->
+    <div class="page-header">
+        <h1 class="page-title">聯絡 Giftomo 團隊</h1>
+        <p class="page-subtitle">無論您有任何問題或建議意向，我們的團隊隨時為您提供協助。請填寫下方表單或使用其他方式聯絡我們。</p>
+    </div>
+
+    <!-- 主要內容 -->
+    <main>
+        <div class="contact-container">
+            <!-- 聯絡資訊 -->
+            <section class="contact-card">
+                <h2 class="section-title">聯絡資訊</h2>
+                <div class="contact-details">
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <img src="https://raw.githubusercontent.com/gifto-mo/home.gifto.mo/main/contact_wechat.png" alt="WeChat">
+                        </div>
+                        <div class="contact-text">
+                            <h3>WeChat</h3>
+                            <p>giftomo_macau</p>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <img src="https://raw.githubusercontent.com/gifto-mo/home.gifto.mo/main/contact_instagram.png" alt="Instagram">
+                        </div>
+                        <div class="contact-text">
+                            <h3>Instagram</h3>
+                            <p><a href="https://instagram.com/gifto.mo_macau" target="_blank">@gifto.mo_macau</a></p>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="contact-text">
+                            <h3>電子郵件</h3>
+                            <p><a href="mailto:gifto.mo.help@gmail.com">gifto.mo.help@gmail.com</a></p>
+                        </div>
+                    </div>
+                    
+                    <div class="business-hours">
+                        <div class="contact-text">
+                            <h3>營業時間</h3>
+                            <div class="hours-grid">
+                                <div class="day-hour">
+                                    <span class="day">週一 - 週五</span>
+                                    <span class="hours">08:00 - 24:00</span>
+                                </div>
+                                <div class="day-hour">
+                                    <span class="day">週六</span>
+                                    <span class="hours">08:30 - 01:00</span>
+                                </div>
+                                <div class="day-hour">
+                                    <span class="day">週日</span>
+                                    <span class="hours">08:30 - 01:00</span>
+                                </div>
+                                <div class="day-hour">
+                                    <span class="day">公眾假期</span>
+                                    <span class="hours">08:30 - 01:00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 聯絡表單 -->
+            <section class="form-card">
+                <h2 class="section-title">發送訊息給我們</h2>
+                <form class="contact-form" action="https://formsubmit.co/gifto.mo.mail@gmail.com" method="POST">
+                    <!-- FormSubmit 配置 -->
+                    <input type="hidden" name="_captcha" value="false">
+                    <input type="hidden" name="_next" value="https://gifto-mo.github.io/home.gifto.mo/thankyou.html">
+                    <input type="hidden" name="_template" value="table">
+                    <input type="hidden" name="_subject" value="Giftomo 網站新訊息">
+                    
+                    <div class="form-group">
+                        <label for="name" class="form-label">
+                            <i class="fas fa-user"></i> 您的姓名
+                        </label>
+                        <input type="text" id="name" name="name" class="form-input" placeholder="請輸入您的姓名" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email" class="form-label">
+                            <i class="fas fa-envelope"></i> 電子郵件
+                        </label>
+                        <input type="email" id="email" name="email" class="form-input" placeholder="請輸入您的電子郵件" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="subject" class="form-label">
+                            <i class="fas fa-tag"></i> 主題
+                        </label>
+                        <select id="subject" name="subject" class="form-select" required>
+                            <option value="" disabled selected>請選擇主題</option>
+                            <option value="product">產品問題</option>
+                            <option value="order">訂單查詢</option>
+                            <option value="payment">付款問題</option>
+                            <option value="business">商務合作</option>
+                            <option value="other">其他問題</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="message" class="form-label">
+                            <i class="fas fa-comment"></i> 您的訊息
+                        </label>
+                        <textarea id="message" name="message" class="form-textarea" placeholder="請輸入您的訊息內容" required></textarea>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-paper-plane"></i> 發送訊息
+                    </button>
+                </form>
+            </section>
+        </div>
+    </main>
+
+    <!-- 頁腳 -->
+    <footer class="footer">
+        <div class="footer-logo">
+            <img src="https://raw.githubusercontent.com/gifto-mo/home.gitfmo.mo./main/logo.png" alt="Giftomo Logo">
+        </div>
+    </footer>
+
+    <script>
+        // 創建動態背景元素
+        function createBackground() {
+            const bgElements = document.getElementById('bgElements');
+            const colors = ['#3a8ee2', '#5a9ef3', '#4a6ee3'];
+            
+            for (let i = 0; i < 5; i++) {
+                const circle = document.createElement('div');
+                circle.classList.add('bg-circle');
+                
+                // 隨機大小
+                const size = Math.random() * 300 + 100;
+                circle.style.width = `${size}px`;
+                circle.style.height = `${size}px`;
+                
+                // 隨機位置
+                circle.style.left = `${Math.random() * 100}%`;
+                circle.style.top = `${Math.random() * 100}%`;
+                
+                // 隨機顏色
+                circle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                
+                // 隨機動畫延遲和持續時間
+                circle.style.animationDelay = `${Math.random() * 5}s`;
+                circle.style.animationDuration = `${Math.random() * 10 + 10}s`;
+                
+                bgElements.appendChild(circle);
+            }
+        }
+        
+        // 表單提交處理
+        function setupForm() {
+            const form = document.querySelector('.contact-form');
+            
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const submitBtn = this.querySelector('.submit-btn');
+                const originalText = submitBtn.innerHTML;
+                
+                // 顯示加載狀態
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 發送中...';
+                submitBtn.disabled = true;
+                
+                // 直接提交表單到FormSubmit
+                this.submit();
+                
+                // 如果提交失敗的備用處理
+                setTimeout(() => {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }, 10000); // 10秒後重置按鈕狀態
+            });
+        }
+        
+        // 頁面加載完成後初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            createBackground();
+            setupForm();
+        });
+    </script>
+</body>
+</html>
