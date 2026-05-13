@@ -3,20 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 聽寫特訓營 - 清晰聲音版</title>
+    <title>AI 聽寫特訓營 - 穩定版</title>
     <style>
         :root { --primary: #6366f1; --success: #22c55e; --danger: #ef4444; --bg: #f8fafc; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .card { background: white; width: 90%; max-width: 550px; padding: 2rem; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         h2 { text-align: center; color: #1e293b; margin-top: 0; }
-        textarea { width: 100%; height: 100px; border: 2px solid #e2e8f0; border-radius: 12px; padding: 1rem; font-size: 1rem; margin-bottom: 1rem; box-sizing: border-box; }
-        .voice-selector { margin-bottom: 1rem; text-align: left; }
-        select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e0; background: white; cursor: pointer; }
-        button { cursor: pointer; border: none; border-radius: 10px; padding: 12px 24px; font-weight: 600; font-size: 1rem; width: 100%; margin: 5px 0; }
+        textarea { width: 100%; height: 120px; border: 2px solid #e2e8f0; border-radius: 12px; padding: 1rem; font-size: 1rem; margin: 1rem 0; box-sizing: border-box; }
+        button { cursor: pointer; border: none; border-radius: 10px; padding: 12px 24px; font-weight: 600; transition: all 0.2s; font-size: 1rem; width: 100%; margin: 5px 0; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-audio { background: #e0e7ff; color: var(--primary); width: auto; padding: 8px 16px; margin-bottom: 10px; }
         #practice-area, #report-area { display: none; }
-        .progress-bar { height: 8px; background: #e2e8f0; border-radius: 4px; margin: 15px 0; overflow: hidden; }
+        .progress-bar { height: 8px; background: #e2e8f0; border-radius: 4px; margin: 20px 0; overflow: hidden; }
         .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s; }
         .input-box { width: 100%; font-size: 1.5rem; padding: 12px; border: 3px solid #e2e8f0; border-radius: 12px; text-align: center; box-sizing: border-box; margin: 10px 0; }
         .input-error { border-color: var(--danger); background: #fff1f2; }
@@ -32,23 +30,17 @@
 <div class="card">
     <div id="setup-area">
         <h2>📝 聽寫練習設定</h2>
-        
-        <div class="voice-selector">
-            <label style="font-size: 0.8rem; color: #64748b;">選擇人聲 (建議選 Google US English 或 Microsoft David/Zira):</label>
-            <select id="voiceSelect"></select>
-        </div>
-
-        <textarea id="wordInput" placeholder="輸入單字，用逗號或空格隔開..."></textarea>
+        <textarea id="wordInput" placeholder="輸入單字，例如：apple, banana, orange..."></textarea>
         <button class="btn-primary" onclick="initPractice()">開始練習</button>
     </div>
 
     <div id="practice-area">
         <div style="display: flex; justify-content: space-between;">
-            <b id="roundTitle" style="color: var(--primary);">第一輪</b>
+            <span id="roundTitle" style="font-weight: bold; color: var(--primary);">第一輪</span>
             <span style="color: #64748b;"><span id="currIdx">1</span> / <span id="totalIdx">0</span></span>
         </div>
         <div class="progress-bar"><div class="progress-fill" id="progressBar"></div></div>
-        <div style="text-align: center;"><button class="btn-audio" onclick="speak()">🔊 重讀單字</button></div>
+        <div style="text-align: center;"><button class="btn-audio" onclick="speak()">🔊 聽音</button></div>
         <input type="text" id="userInput" class="input-box" placeholder="請拼寫..." autocomplete="off">
         <div id="feedback"></div>
         <button id="mainBtn" class="btn-primary" onclick="processInput()">提交 (Enter)</button>
@@ -66,30 +58,7 @@
     let allWords = [], currentPool = [], currentIndex = 0;
     let wrongThisRound = new Set(), currentRound = 1;
     let isCorrectionMode = false, correctionDone = 0, isWaitingNext = false;
-    
     const synth = window.speechSynthesis;
-    let voices = [];
-
-    // 初始化人聲清單
-    function loadVoices() {
-        voices = synth.getVoices();
-        const select = document.getElementById('voiceSelect');
-        select.innerHTML = '';
-        
-        // 優先篩選英文人聲
-        voices.filter(v => v.lang.includes('en')).forEach(v => {
-            const option = document.createElement('option');
-            option.value = v.name;
-            option.innerText = `${v.name} (${v.lang})`;
-            select.appendChild(option);
-        });
-    }
-
-    // 解決 Chrome 需要異步加載聲音的問題
-    if (speechSynthesis.onvoiceschanged !== undefined) {
-        speechSynthesis.onvoiceschanged = loadVoices;
-    }
-    loadVoices();
 
     function initPractice() {
         const text = document.getElementById('wordInput').value;
@@ -118,6 +87,7 @@
         document.getElementById('currIdx').innerText = currentIndex + 1;
         document.getElementById('progressBar').style.width = `${(currentIndex / currentPool.length) * 100}%`;
         document.getElementById('userInput').value = "";
+        document.getElementById('userInput').disabled = false;
         document.getElementById('userInput').className = "input-box";
         document.getElementById('feedback').style.display = 'none';
         document.getElementById('mainBtn').innerText = "提交 (Enter)";
@@ -128,15 +98,8 @@
     function speak() {
         if (synth.speaking) synth.cancel();
         const utter = new SpeechSynthesisUtterance(currentPool[currentIndex]);
-        
-        // 設定選擇的人聲
-        const selectedVoiceName = document.getElementById('voiceSelect').value;
-        const selectedVoice = voices.find(v => v.name === selectedVoiceName);
-        if (selectedVoice) utter.voice = selectedVoice;
-
         utter.lang = 'en-US';
-        utter.rate = 0.75; // 稍慢的速度，更清晰
-        utter.pitch = 1;  // 標準音調
+        utter.rate = 0.8;
         synth.speak(utter);
     }
 
@@ -146,6 +109,7 @@
         const userVal = inputField.value.trim().toLowerCase();
         const correctVal = currentPool[currentIndex].toLowerCase();
 
+        // 狀態 1: 正確後按 Enter 跳下一步
         if (isWaitingNext) {
             currentIndex++;
             if (currentIndex < currentPool.length) resetQuestion();
@@ -153,36 +117,40 @@
             return;
         }
 
+        // 狀態 2: 罰抄模式
         if (isCorrectionMode) {
             if (userVal === correctVal) {
                 correctionDone++;
                 if (correctionDone >= 2) {
                     feedback.className = "feedback correct";
-                    feedback.innerHTML = "✅ 很好，記住了！<br>按 Enter 換下一個";
+                    feedback.innerHTML = "✅ 記住了！按 Enter 繼續";
                     isWaitingNext = true;
+                    document.getElementById('mainBtn').innerText = "繼續 ➔";
                 } else {
-                    feedback.innerHTML = `❌ 正確答案：<b style="font-size:1.6rem">${currentPool[currentIndex]}</b><br>請再拼一次以加深印象 (1/2)`;
+                    feedback.innerHTML = `❌ 正確答案：<b>${currentPool[currentIndex]}</b><br>很好，請再輸入一次 (1/2)`;
                     inputField.value = "";
                 }
             } else {
                 correctionDone = 0;
-                feedback.innerHTML = `❌ 拼錯了！請重新連續輸入兩次：<br><b style="font-size:1.6rem">${currentPool[currentIndex]}</b>`;
+                feedback.innerHTML = `❌ 錯誤！請重新連續輸入兩次：<br><b style="font-size:1.5rem">${currentPool[currentIndex]}</b>`;
                 inputField.value = "";
             }
             return;
         }
 
+        // 狀態 3: 正常檢查
         if (userVal === correctVal) {
             feedback.style.display = 'block';
             feedback.className = "feedback correct";
-            feedback.innerHTML = "✅ 完全正確！按 Enter 繼續";
+            feedback.innerHTML = "✅ 完全正確！";
             isWaitingNext = true;
+            document.getElementById('mainBtn').innerText = "繼續 ➔";
         } else {
             isCorrectionMode = true;
             wrongThisRound.add(currentPool[currentIndex]);
             feedback.style.display = 'block';
             feedback.className = "feedback wrong";
-            feedback.innerHTML = `❌ 錯誤！正確答案是：<br><b style="font-size:1.8rem; letter-spacing: 2px;">${currentPool[currentIndex]}</b><br>請連續拼對兩次以繼續 (0/2)`;
+            feedback.innerHTML = `❌ 拼錯了！正確答案是：<br><b style="font-size:1.5rem">${currentPool[currentIndex]}</b><br>請輸入兩次以繼續 (0/2)`;
             inputField.value = "";
             inputField.className = "input-box input-error";
             speak();
@@ -197,17 +165,15 @@
         currentPool.forEach(word => {
             const row = tbody.insertRow();
             row.insertCell(0).innerText = word;
-            const res = row.insertCell(1);
-            res.innerText = wrongThisRound.has(word) ? "❌ 需再練習" : "✅ 完美";
-            res.style.color = wrongThisRound.has(word) ? "#ef4444" : "#22c55e";
+            row.insertCell(1).innerText = wrongThisRound.has(word) ? "❌ 需重練" : "✅ 完美";
         });
-        document.getElementById('scoreBox').innerHTML = `本輪準確率: <b>${Math.round(((currentPool.length - wrongThisRound.size)/currentPool.length)*100)}%</b>`;
+        document.getElementById('scoreBox').innerHTML = `本輪準確率: ${Math.round(((currentPool.length - wrongThisRound.size)/currentPool.length)*100)}%`;
         
         const action = document.getElementById('reportAction');
         if (wrongThisRound.size > 0) {
-            action.innerHTML = `<button class="btn-primary" onclick="retryErrors()">🔄 下一輪：挑戰這 ${wrongThisRound.size} 個錯字</button>`;
+            action.innerHTML = `<button class="btn-primary" onclick="retryErrors()">🔄 練這 ${wrongThisRound.size} 個錯字</button>`;
         } else {
-            action.innerHTML = `<button class="btn-primary" style="background:#22c55e" onclick="location.reload()">✨ 挑戰成功！返回首頁</button>`;
+            action.innerHTML = `<button class="btn-primary" style="background:#22c55e" onclick="location.reload()">✨ 全部搞定！重新開始</button>`;
         }
     }
 
