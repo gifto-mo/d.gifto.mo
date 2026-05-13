@@ -1,1 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>英文聽寫衝刺器 (糾錯版)</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; background: #f0f4f8; }
+        .container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 600px; }
+        h2 { color: #2c3e50; text-align: center; }
+        textarea { width: 100%; height: 80px; margin: 10px 0; border: 2px solid #cbd5e0; border-radius: 8px; padding: 12px; font-size: 16px; box-sizing: border-box; }
+        button { background: #4a90e2; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-size: 16px; margin: 5px; transition: 0.2s; }
+        button:hover { background: #357abd; }
+        #practice-area, #report-area { margin-top: 20px; display: none; text-align: center; padding-top: 20px; border-top: 2px solid #edf2f7; }
+        input[type="text"] { font-size: 24px; padding: 12px; width: 85%; border: 2px solid #cbd5e0; border-radius: 8px; text-align: center; margin: 15px 0; }
+        .feedback { font-size: 1.1em; font-weight: bold; margin: 15px 0; padding: 10px; border-radius: 8px; }
+        .correct { background-color: #d4edda; color: #155724; }
+        .wrong { background-color: #f8d7da; color: #721c24; }
+        .correct-answer { color: #e53e3e; text-decoration: underline; font-size: 1.2em; }
+        .stats-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .stats-table th, .stats-table td { border: 1px solid #e2e8f0; padding: 12px; text-align: center; }
+    </style>
+</head>
+<body>
 
+<div class="container">
+    <h2>🎯 聽寫衝刺 (即時糾錯版)</h2>
+    
+    <div id="setup-area">
+        <p><strong>請輸入單字清單：</strong></p>
+        <textarea id="wordInput" placeholder="apple, orange, environment..."></textarea>
+        <div style="text-align:center;"><button onclick="initPractice()">開始練習</button></div>
+    </div>
+
+    <div id="practice-area">
+        <div style="color: #718096; margin-bottom: 10px;">單字：<span id="currentIdx">1</span> / <span id="totalWords">0</span></div>
+        <button onclick="speakCurrentWord()" style="background: #718096;">🔊 重讀單字</button>
+        <br>
+        <input type="text" id="userInput" placeholder="請拼寫..." autocomplete="off">
+        <div id="feedback" class="feedback" style="display:none;"></div>
+        <br>
+        <button id="checkBtn" onclick="checkWord()">提交答案 (Enter)</button>
+        <button id="nextBtn" onclick="nextWord()" style="display:none; background: #48bb78;">繼續 ➔</button>
+    </div>
+
+    <div id="report-area">
+        <h3>📊 溫習報告</h3>
+        <p id="scoreSummary"></p>
+        <table class="stats-table" id="reportTable">
+            <thead><tr><th>單字</th><th>練習結果</th></tr></thead>
+            <tbody></tbody>
+        </table>
+        <div id="reportBtns" style="margin-top: 20px;"></div>
+    </div>
+</div>
+
+<script>
+    let allWords = [];
+    let currentWordsToTest = [];
+    let currentIndex = 0;
+    let wrongWords = new Set();
+    const synth = window.speechSynthesis;
+
+    function initPractice() {
+        const input = document.getElementById('wordInput').value;
+        allWords = [...new Set(input.split(/[\s,]+/).filter(w => w.trim() !== ""))];
+        if (allWords.length === 0) return alert("請輸入單字");
+        currentWordsToTest = [...allWords];
+        wrongWords.clear();
+        startRound();
+    }
+
+    function startRound() {
+        currentIndex = 0;
+        document.getElementById('setup-area').style.display = 'none';
+        document.getElementById('report-area').style.display = 'none';
+        document.getElementById('practice-area').style.display = 'block';
+        document.getElementById('totalWords').innerText = currentWordsToTest.length;
+        setupWord();
+    }
+
+    function setupWord() {
+        document.getElementById('currentIdx').innerText = currentIndex + 1;
+        document.getElementById('userInput').value = "";
+        document.getElementById('userInput').disabled = false;
+        document.getElementById('feedback').style.display = 'none';
+        document.getElementById('nextBtn').style.display = 'none';
+        document.getElementById('checkBtn').style.display = 'inline-block';
+        document.getElementById('userInput').focus();
+        setTimeout(speakCurrentWord, 300);
+    }
+
+    function speakCurrentWord() {
+        if (synth.speaking) synth.cancel();
+        const utter = new SpeechSynthesisUtterance(currentWordsToTest[currentIndex]);
+        utter.lang = 'en-US';
+        utter.rate = 0.8;
+        synth.speak(utter);
+    }
+
+    function checkWord() {
+        const userVal = document.getElementById('userInput').value.trim().toLowerCase();
+        const correctVal = currentWordsToTest[currentIndex].toLowerCase();
+        const feedback = document.getElementById('feedback');
+        
+        feedback.style.display = 'block';
+        document.getElementById('userInput').disabled = true;
+        document.getElementById('checkBtn').style.display = 'none';
+        document.getElementById('nextBtn').style.display = 'inline-block';
+
+        if (userVal === correctVal) {
+            feedback.innerHTML = "✅ 太棒了！拼寫正確。";
+            feedback.className = "feedback correct";
+        } else {
+            wrongWords.add(currentWordsToTest[currentIndex]);
+            feedback.innerHTML = `❌ 拼錯了！正確答案是：<span class="correct-answer">${currentWordsToTest[currentIndex]}</span>`;
+            feedback.className = "feedback wrong";
+            speakCurrentWord(); // 拼錯時再讀一遍加深印象
+        }
+    }
+
+    function nextWord() {
+        currentIndex++;
+        if (currentIndex < currentWordsToTest.length) {
+            setupWord();
+        } else {
+            showReport();
+        }
+    }
+
+    function showReport() {
+        document.getElementById('practice-area').style.display = 'none';
+        document.getElementById('report-area').style.display = 'block';
+        const tbody = document.querySelector('#reportTable tbody');
+        tbody.innerHTML = "";
+        
+        allWords.forEach(word => {
+            const row = tbody.insertRow();
+            row.insertCell(0).innerText = word;
+            const res = row.insertCell(1);
+            res.innerText = wrongWords.has(word) ? "❌ 有待加強" : "✅ 已掌握";
+            res.style.color = wrongWords.has(word) ? "#e53e3e" : "#38a169";
+        });
+
+        const btnGroup = document.getElementById('reportBtns');
+        btnGroup.innerHTML = "";
+        if (wrongWords.size > 0) {
+            const retryBtn = document.createElement('button');
+            retryBtn.innerText = `🔄 重新挑戰 ${wrongWords.size} 個錯字`;
+            retryBtn.onclick = () => {
+                currentWordsToTest = [...wrongWords];
+                wrongWords.clear();
+                startRound();
+            };
+            btnGroup.appendChild(retryBtn);
+        }
+        const backBtn = document.createElement('button');
+        backBtn.innerText = "回主頁";
+        backBtn.style.background = "#718096";
+        backBtn.onclick = () => location.reload();
+        btnGroup.appendChild(backBtn);
+    }
+
+    document.getElementById('userInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            if (document.getElementById('nextBtn').style.display === 'inline-block') nextWord();
+            else checkWord();
+        }
+    });
+</script>
+</body>
+</html>
